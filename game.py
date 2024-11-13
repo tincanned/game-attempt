@@ -11,21 +11,21 @@ class Game:
 
         pygame.init()
 
-        pygame.display.set_caption('ты приёмный')
+        pygame.display.set_caption('mänguprojekt')
 
-        #window resolution in pixels
+        #aken pikslites
         self.screen = pygame.display.set_mode((640, 480))
 
         self.display = pygame.Surface((320, 240))
 
-        #restricting framerate
+        #ограниченное колво кадров
         self.clock = pygame.time.Clock()
 
         
         self.movement = [False, False]
 
         self.assets = {
-            'player': load_image('decor/decor3.png'), #for now!!!!!!!
+            'player': load_image('player/idle1.png'), 
             'decor': load_images('decor'),
             'grass': load_images('grass'),
             'large_decor': load_images('large_decor')
@@ -42,14 +42,14 @@ class Game:
 
     def run(self):
 
-        #gameloop
+        #gametsükkel
         while True:
 
             self.display.fill((50, 100, 90))
 
             self.tilemap.render(self.display)
 
-                #no change on y axis
+                
             horisontaal = (self.movement[1] - self.movement[0]) * 1
             self.player.update(self.tilemap, (horisontaal, 0))
 
@@ -64,20 +64,20 @@ class Game:
                     pygame.quit()
                     sys.exit()
 
-                    #jey is pressed down
+                    #klahv on vajutatud
                 if event.type == pygame.KEYDOWN:
-                    #moving up
+                    
                     if event.key == pygame.K_LEFT:
                         self.movement[0] = True
-                        #moving down
+                        
                     if event.key == pygame.K_RIGHT:
                         self.movement[1] = True
                     if event.key == pygame.K_UP:
                         self.player.velocity[1] = -3
  
-                   #key is released  
+                   #klahv pole vajutatu d 
                 if event.type == pygame.KEYUP:
-                    #stop moving up and down
+                    #stop up, down
                     if event.key == pygame.K_LEFT:
                         self.movement[0] = False
                     if event.key == pygame.K_RIGHT:
@@ -86,9 +86,9 @@ class Game:
 
 
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
-            pygame.display.update()   #just a black screen wo it
+            pygame.display.update()   #must ekraan ilma selleta
             self.clock.tick(60)
-#calling initialized object(here Game)
+#kutsun initializeeritud objecti(siin Game)
 Game().run()
 
 
