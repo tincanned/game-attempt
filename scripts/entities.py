@@ -2,7 +2,7 @@ import pygame
 #from scripts.tilemap import Tilemap
 
 class PhysicsEntity:
-                      #the entity itself, referencing the game, position, size of the entity
+        #specific entity, referencing the game, position, size of the entity
     def __init__(self, game, e_type,pos, size):
         self.game = game
         self.type = e_type
