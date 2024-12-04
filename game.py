@@ -11,7 +11,7 @@ class Game:
 
         pygame.init()
 
-        pygame.display.set_caption('mänguprojekt')
+        pygame.display.set_caption('Forest Chasm')
 
         #ekraan pikslites
         self.screen = pygame.display.set_mode((640, 480))
@@ -24,14 +24,18 @@ class Game:
         
         self.movement = [False, False]
 
+            #всё норм
         self.assets = {
             'player': load_image('entities/player/idle/idle1.png'), #for now!!!!!!!
             'decor': load_images('tiles/decor'),
             'grass': load_images('tiles/grass'),
-            'large_decor': load_images('tiles/large_decor')
+            'large_decor': load_images('tiles/large_decor'),
+            'background': load_image('background.png')
         }
+
+
         
-        self.player = PhysicsEntity(self, 'player', (50, 50), (36, 36))
+        self.player = PhysicsEntity(self, 'player', (50, 50), (8, 15))
 
 
         
@@ -48,18 +52,24 @@ class Game:
         #mängutsükkel
         while True:
 
-            self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0] / 30)
-            self.scroll[1] += (self.player.rect().centery - self.display.get_height() / 2 - self.scroll[1] / 30)
+            
+            self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0]) / 15
+            self.scroll[1] += (self.player.rect().centery - self.display.get_height() / 2 - self.scroll[1]) / 15
+
+            
+
 
 
             render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
+            
 
-            self.display.fill((50, 100, 90))
+            self.display.blit(self.assets['background'], (0, 0))
+         
 
             self.tilemap.render(self.display, offset = render_scroll)
 
                 #pole muutusi y teljel
-            horisontaal = (self.movement[1] - self.movement[0]) * 1
+            horisontaal = (self.movement[1] - self.movement[0]) * 2
             self.player.update(self.tilemap, (horisontaal, 0))
 
             self.player.render(self.display, offset = render_scroll)

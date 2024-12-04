@@ -1,22 +1,20 @@
 import pygame
-#from scripts.tilemap import Tilemap
 
 class PhysicsEntity:
-        #specific entity, referencing the game, position, size of the entity
-    def __init__(self, game, e_type,pos, size):
+    def __init__(self, game, e_type, pos, size):
         self.game = game
         self.type = e_type
         self.pos = list(pos)
         self.size = size
         self.velocity = [0, 0]
-        self.collisions = {'up' : False, 'down' : False, 'right': False, 'left' : False}
+        self.collisions = {'up': False, 'down': False, 'right': False, 'left': False}
+    
+        self.sprite_offset_y = size[1] - game.assets['player'].get_height()
+
 
     def rect(self):
         return pygame.Rect(self.pos[0], self.pos[1], self.size[0], self.size[1])
-
-   
-
-
+        
     def update(self, tilemap, movement=(0, 0)):
         self.collisions = {'up': False, 'down': False, 'right': False, 'left': False}
         
@@ -50,8 +48,20 @@ class PhysicsEntity:
         
         if self.collisions['down'] or self.collisions['up']:
             self.velocity[1] = 0
+        
+    def render(self, surf, offset=(0, 0)):
+  
+        sprite_x = self.pos[0] - offset[0]
+        sprite_y = self.pos[1] - offset[1] + self.sprite_offset_y
+
+        surf.blit(self.game.assets['player'], (sprite_x, sprite_y))
+                   
+'''        pygame.draw.rect(
+                surf, (0, 0, 255),
+                self.rect().move(-offset[0], -offset[1]), 1          #rect silumiseks
+            )
+'''
 
 
+     
 
-    def render(self, surf, offset = (0, 0)):
-        surf.blit(self.game.assets['player'], (self.pos[0] - offset[0], self.pos[1] - offset[1]))
