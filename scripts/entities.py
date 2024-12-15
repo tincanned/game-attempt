@@ -10,11 +10,19 @@ class PhysicsEntity:
         self.collisions = {'up': False, 'down': False, 'right': False, 'left': False}
     
         self.sprite_offset_y = size[1] - game.assets['player'].get_height()
-
+        self.action = ''
+        self.anim_offset = (-3, 0)  #piltide osadeks, mis asuvad väljaspool raami
+        self.flip = False           #pöörab pildid, kui mängija 'vaatab vasakule/paremale
+        self.set_action('idle')
 
     def rect(self):
         return pygame.Rect(self.pos[0], self.pos[1], self.size[0], self.size[1])
         
+    def set_action(self, action):
+        if action != self.action:
+            self.action = action
+            self.animation = self.game.assets[self.type + '/' + self.action].copy()
+
     def update(self, tilemap, movement=(0, 0)):
         self.collisions = {'up': False, 'down': False, 'right': False, 'left': False}
         
@@ -22,7 +30,7 @@ class PhysicsEntity:
         
         self.pos[0] += frame_movement[0]
         entity_rect = self.rect()
-        for rect in tilemap.physics_rects_around(self.pos):
+        for rect in tilemap.physics_rects_around(self.pos, self.size):
             if entity_rect.colliderect(rect):
                 if frame_movement[0] > 0:
                     entity_rect.right = rect.left
@@ -34,7 +42,7 @@ class PhysicsEntity:
         
         self.pos[1] += frame_movement[1]
         entity_rect = self.rect()
-        for rect in tilemap.physics_rects_around(self.pos):
+        for rect in tilemap.physics_rects_around(self.pos, self.size):
             if entity_rect.colliderect(rect):
                 if frame_movement[1] > 0:
                     entity_rect.bottom = rect.top
@@ -44,24 +52,47 @@ class PhysicsEntity:
                     self.collisions['up'] = True
                 self.pos[1] = entity_rect.y
         
+        if movement[0] > 0:
+            self.flip = False
+        if movement[0] < 0:
+            self.flip = True
+        
         self.velocity[1] = min(5, self.velocity[1] + 0.1)
         
         if self.collisions['down'] or self.collisions['up']:
             self.velocity[1] = 0
+        self.animation.update()
         
     def render(self, surf, offset=(0, 0)):
   
-        sprite_x = self.pos[0] - offset[0]
-        sprite_y = self.pos[1] - offset[1] + self.sprite_offset_y
+        sprite_x = self.pos[0] - offset[0] + self.anim_offset[0]
+         #мб тут ошибка
+        sprite_y = self.pos[1] - offset[1] + self.sprite_offset_y + self.anim_offset[1]
 
-        surf.blit(self.game.assets['player'], (sprite_x, sprite_y))
+        surf.blit(pygame.transform.flip(self.animation.img(), self.flip, False), (sprite_x, sprite_y))
+       
                    
-'''        pygame.draw.rect(
+        '''pygame.draw.rect(
                 surf, (0, 0, 255),
                 self.rect().move(-offset[0], -offset[1]), 1          #rect silumiseks
-            )
-'''
+            )'''
 
 
-     
+class Player(PhysicsEntity):
+    def __init__(self, game, pos, size):
+        super().__init__(game, 'player', pos, size)
+        self.air_time = 0
+    
+    def update(self, tilemap, movement = (0, 0)):
+        super().update(tilemap, movement = movement)
 
+        self.air_time += 1
+        if self.collisions['down']:
+            self.air_time = 0
+
+        if self.air_time > 4:
+            self.set_action('jump')
+        elif movement[0] != 0:
+            self.set_action('run')
+        else:
+            self.set_action('idle')

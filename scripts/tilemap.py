@@ -1,7 +1,20 @@
 import pygame
+import json
 
+AUTOTILE_MAP = {
+        tuple(sorted([(1, 0), (0, 1)])): 0,
+        tuple(sorted([(1, 0), (0, 1), (-1, 0)])): 1,
+        tuple(sorted([(-1, 0), (0, 1)])): 2,
+        tuple(sorted([(-1, 0), (0, -1), (0, 1)])): 3,
+        tuple(sorted([(-1, 0), (0, -1)])): 4,
+        tuple(sorted([(-1, 0), (0, -1), (1, 0)])): 5,
+        tuple(sorted([(1, 0), (0, -1)])): 6,
+        tuple(sorted([(1, 0), (0, -1), (0, 1)])): 7,
+        tuple(sorted([(1, 0), (-1, 0), (0, 1), (0, -1)])): 8,
+}
 NAABER_OFFSET = [(-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (0, 0), (-1, 1), (0, 1), (1, 1)]
 PHYSICS_TILES = {'grass'}
+AUTOTILE_TYPES = {'grass'}
 
 
 class Tilemap():
@@ -14,10 +27,10 @@ class Tilemap():
                 self.offgrid_tiles = []
                 
                                 #täidab tilemapi
-                for i in range(10):
+                '''for i in range(10):
                         self.tilemap[str(3 + i) + ';10'] = {'type' : 'grass', 'variant' : '1', 'pos': (3 + i, 10)}
                 
-                        self.tilemap['10;' + str(5 + i)] = {'type': 'grass', 'variant': '1', 'pos': (10, 5 + i)}
+                        self.tilemap['10;' + str(5 + i)] = {'type': 'grass', 'variant': '1', 'pos': (10, 5 + i)}'''
                 
 
 
@@ -31,18 +44,50 @@ class Tilemap():
                                 tiles.append(self.tilemap[check_loc])
                 return tiles
         
-        def physics_rects_around(self, pos, offset = (0, 0)):
-                rects = []
-                for tile in self.tiles_around(pos):
-                        if tile['type'] in PHYSICS_TILES:  
-                                rects.append(pygame.Rect(
-                                tile['pos'][0] * self.tile_size,
-                                tile['pos'][1] * self.tile_size,
-                                self.tile_size, self.tile_size
-                                ))
-                return rects 
-                      
+        def save(self, path):
+                f = open(path, 'w')
+                json.dump({'tilemap': self.tilemap, 'tile_size': self.tile_size, 'offgrid': self.offgrid_tiles}, f)
+                f.close()
         
+        def load(self, path):
+                f = open(path, "r")
+                map_data = json.load(f)
+                f.close()
+
+                self.tilemap = map_data['tilemap']
+                self.tile_size = map_data['tile_size']
+                self.offgrid_tiles = map_data['offgrid']
+
+
+
+     
+        def physics_rects_around(self, pos, size):
+                rects = []
+                tile_loc_top = (int(pos[0] // self.tile_size), int(pos[1] // self.tile_size))
+                tile_loc_bottom = (int(pos[0] // self.tile_size), int((pos[1] + size[1] - 1) // self.tile_size))  # kaasa alumine serv
+                for x in range(tile_loc_top[0] - 1, tile_loc_top[0] + 2):  # horisontaal kontroll
+                        for y in range(tile_loc_top[1] - 1, tile_loc_bottom[1] + 2):  # ülalt alla kontroll
+                                loc = f"{x};{y}"
+                                if loc in self.tilemap and self.tilemap[loc]['type'] in PHYSICS_TILES:
+                                        tile = self.tilemap[loc]
+                                        rects.append(
+                                        pygame.Rect(tile['pos'][0] * self.tile_size, tile['pos'][1] * self.tile_size, self.tile_size, self.tile_size)
+                                        )
+                return rects
+
+        def autotile(self):
+                for loc in self.tilemap:
+                        tile = self.tilemap[loc]
+                        naabrid = set()
+                        for shift in [(1, 0), (-1, 0), (0, -1), (0, 1)]:
+                                check_loc = str(tile['pos'][0] + shift[0]) + ';' + str(tile['pos'][1] + shift[1])
+                                if check_loc in self.tilemap:
+                                        if self.tilemap[check_loc]['type'] == tile['type']:
+                                                naabrid.add(shift)
+                        naabrid = tuple(sorted(naabrid))
+                        if (tile['type'] in AUTOTILE_TYPES) and (naabrid in AUTOTILE_MAP):
+                                tile['variant'] = AUTOTILE_MAP[naabrid]
+                
       
         
         def render(self, surf, offset = (0, 0)):

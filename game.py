@@ -1,7 +1,7 @@
 import pygame
 import sys
-from scripts.entities import PhysicsEntity
-from scripts.utils import load_image
+from scripts.entities import PhysicsEntity, Player
+from scripts.utils import load_image, Animation
 from scripts.utils import load_images
 from scripts.tilemap import Tilemap
 
@@ -30,16 +30,22 @@ class Game:
             'decor': load_images('tiles/decor'),
             'grass': load_images('tiles/grass'),
             'large_decor': load_images('tiles/large_decor'),
-            'background': load_image('background.png')
+            'background': load_image('background.png'),
+            'player/idle': Animation(load_images('entities/player/idle'), img_dur = 6),
+            'player/run': Animation(load_images('entities/player/run'), img_dur = 4),
+            'player/jump': Animation(load_images('entities/player/jump'), img_dur = 5),
+            'player/slide': Animation(load_images('entities/player/slide'), img_dur = 5),
+            'player/wall_slide': Animation(load_images('entities/player/wall_slide'), img_dur = 5)
         }
 
 
         
-        self.player = PhysicsEntity(self, 'player', (50, 50), (8, 15))
+        self.player = Player(self, (50, 50), (10, 24))
 
 
         
         self.tilemap = Tilemap(self, tile_size=16)
+        self.tilemap.load('map.json')
 
         self.scroll = [0, 0]
 
@@ -52,18 +58,13 @@ class Game:
         #mängutsükkel
         while True:
 
-            
+            self.display.blit(self.assets['background'], (0, 0))
+
             self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0]) / 15
             self.scroll[1] += (self.player.rect().centery - self.display.get_height() / 2 - self.scroll[1]) / 15
 
             
-
-
-
             render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
-            
-
-            self.display.blit(self.assets['background'], (0, 0))
          
 
             self.tilemap.render(self.display, offset = render_scroll)
@@ -109,6 +110,3 @@ class Game:
             self.clock.tick(60)
 #kutsun initsializeeritud objecti(siin Game)
 Game().run()
-
-
-
