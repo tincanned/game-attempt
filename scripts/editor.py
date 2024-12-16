@@ -7,7 +7,7 @@ RENDER_SCALE = 2.0
 
 class Editor:
     def __init__(self):
-        
+
 
         pygame.init()
 
