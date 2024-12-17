@@ -51,7 +51,7 @@ class Game:
 
         
         self.tilemap = Tilemap(self, tile_size=16)
-        self.tilemap.load('game-attempt/map.json')
+        self.tilemap.load('map.json')
         
 
         self.leaf_spawners = []
