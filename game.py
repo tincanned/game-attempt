@@ -1,9 +1,12 @@
 import pygame
 import sys
+import math
+import random
 from scripts.entities import PhysicsEntity, Player
 from scripts.utils import load_image, Animation
 from scripts.utils import load_images
 from scripts.tilemap import Tilemap
+from scripts.particle import Particle
 
 class Game:
     def __init__(self):
@@ -35,7 +38,10 @@ class Game:
             'player/run': Animation(load_images('entities/player/run'), img_dur = 4),
             'player/jump': Animation(load_images('entities/player/jump'), img_dur = 5),
             'player/slide': Animation(load_images('entities/player/slide'), img_dur = 5),
-            'player/wall_slide': Animation(load_images('entities/player/wall_slide'), img_dur = 5)
+            'player/wall_slide': Animation(load_images('entities/player/wall_slide'), img_dur = 5),
+            'particle/leaf': Animation(load_images('particles/leaf'), img_dur=20, loop=False),
+            'particle/particle': Animation(load_images('particles/particle'), img_dur=6, loop=False),
+            'spawners': load_images('tiles/spawners'),
         }
 
 
@@ -45,11 +51,23 @@ class Game:
 
         
         self.tilemap = Tilemap(self, tile_size=16)
-        self.tilemap.load('map.json')
-
-        self.scroll = [0, 0]
-
+        self.tilemap.load('game-attempt/map.json')
         
+
+        self.leaf_spawners = []
+        for tree in self.tilemap.extract([('large_decor', 2)], keep=True):
+            self.leaf_spawners.append(pygame.Rect(4 + tree['pos'][0], 4 + tree['pos'][1], 23, 13))
+        print(self.leaf_spawners)
+
+        for spawner in self.tilemap.extract([('spawners', 0), ('spawners',1 )]):
+            if spawner['variant'] == 0:
+                self.player.pos = spawner['pos']
+            else:
+                print(spawner['pos'], 'enemy')
+
+
+        self.particles = []
+        self.scroll = [0, 0]
 
    
 
@@ -62,19 +80,30 @@ class Game:
 
             self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0]) / 15
             self.scroll[1] += (self.player.rect().centery - self.display.get_height() / 2 - self.scroll[1]) / 15
+            render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
+
+            for rect in self.leaf_spawners:
+                if random.random() * 49999 < rect.width * rect.height:
+                    pos = (rect.x + random.random() * rect.width, rect.y + random.random() * rect.height)
+                    self.particles.append(Particle(self, 'leaf', pos, velocity=[-0.1, 0.3], frame=random.randint(0, 20)))
+
 
             
-            render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
-         
-
             self.tilemap.render(self.display, offset = render_scroll)
 
                 #pole muutusi y teljel
             horisontaal = (self.movement[1] - self.movement[0]) * 2
-            self.player.update(self.tilemap, (horisontaal, 0))
 
+            self.player.update(self.tilemap, (horisontaal, 0))
             self.player.render(self.display, offset = render_scroll)
 
+            for particle in self.particles.copy():
+                kill = particle.update()
+                particle.render(self.display, offset=render_scroll)
+                if particle.type == 'leaf':
+                    particle.pos[0] += math.sin(particle.animation.frame * 0.035) * 0.3 # smoother pattern for falling leafs
+                if kill:
+                    self.particles.remove(particle)
 
 
 
@@ -94,6 +123,8 @@ class Game:
                         self.movement[1] = True
                     if event.key == pygame.K_UP:
                         self.player.jump()
+                    if event.key == pygame.K_x:
+                        self.player.dash()
  
                    #klahv pole vajutatud  
                 if event.type == pygame.KEYUP:
