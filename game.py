@@ -18,7 +18,7 @@ class Game:
 
         pygame.init()
 
-        pygame.display.set_caption('Forest Chasm')
+        pygame.display.set_caption('Pathless')
 
         #ekraan pikslites
         self.screen = pygame.display.set_mode((640, 480))
@@ -56,7 +56,7 @@ class Game:
 
         self.sfx = {
             'jump': pygame.mixer.Sound('sfx/jump.wav'),
-            'dash': pygame.mixer.Sound('sfx/dash.wav'),
+            'dash': pygame.mixer.Sound('sfx/sparkle.wav'),
             'hit': pygame.mixer.Sound('sfx/hit.wav'),
             'shoot': pygame.mixer.Sound('sfx/shoot.wav'),
             'ambience': pygame.mixer.Sound('sfx/ambience.wav'),
@@ -65,7 +65,7 @@ class Game:
         self.sfx['ambience'].set_volume(0.2)
         self.sfx['shoot'].set_volume(0.4)
         self.sfx['hit'].set_volume(0.8)
-        self.sfx['dash'].set_volume(0.3)
+        self.sfx['dash'].set_volume(0.1)
         self.sfx['jump'].set_volume(0.7)
 
 
@@ -102,21 +102,76 @@ class Game:
         self.projectiles = []
         self.particles = []
         self.sparks = []
-        self.player.pos = [50, 50] #спамниться на спавне а не бегает как сумашедшая при смерти внизу
+        #self.player.pos = [50, 50] #спамниться на спавне а не бегает как сумашедшая при смерти внизу
 
         
         self.scroll = [0, 0]
         self.dead = 0
         self.transition = -30
 
+    def start_screen(self):
+        background = pygame.image.load('andmed/img/intro.png').convert()
+        start_button = pygame.image.load('andmed/img/button.png').convert_alpha()
+        logo = pygame.image.load('andmed/img/logo.png').convert_alpha()
+   
+
+        background = pygame.transform.scale(background, (self.screen.get_width(), self.screen.get_height()))
+
+        logo_width = 300  # Adjust this width as needed
+        logo_height = 150  # Adjust this height as needed
+        logo = pygame.transform.scale(logo, (logo_width, logo_height))
+
+        logo_x = (self.screen.get_width() - logo_width) // 1.25
+        logo_y = 50 
+        
+
+        #suurus
+        button_width = 100 
+        button_height = 63
+        start_button = pygame.transform.scale(start_button, (button_width, button_height))
+        start_button.set_colorkey((255, 255, 255))
+       
+
+        #asukoht
+        button_x = (self.screen.get_width() - button_width) // 2.5
+        button_y = self.screen.get_height() // 1.9
+        button_rect = start_button.get_rect(topleft=(button_x, button_y))
+
+        
+
+
+        
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT: 
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    if button_rect.collidepoint(mouse_pos):  
+                        return
+                    
+            self.screen.blit(background, (0, 0))
+            self.screen.blit(logo, (logo_x, logo_y))
+            self.screen.blit(start_button, button_rect.topleft)
+    
+
+            pygame.display.update()
+
+
+
    
 
     def run(self):
 
-        pygame.mixer.music.load('andmed/music.wav')
-        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.load('sfx/lullaby.wav')
+        pygame.mixer.music.set_volume(0.4)
         pygame.mixer.music.play(-1)
-
+        self.start_screen()
+        #MUSIC
+        pygame.mixer.music.load('sfx/hiding.wav')
+        pygame.mixer.music.set_volume(0.4)
+        pygame.mixer.music.play(-1)
         self.sfx['ambience'].play(-1)
 
         #mängutsükkel
@@ -161,7 +216,7 @@ class Game:
                 if kill:
                     self.enemies.remove(enemy)
                 #pole muutusi y teljel
-            #horisontaal = (self.movement[1] - self.movement[0]) * 2
+           
 
             if not self.dead:
                 self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
