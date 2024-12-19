@@ -1,3 +1,20 @@
+################################################
+# Programmeerimine I
+# 2024/2025 sügissemester
+#
+# Projekt 
+# Teema: arvutimäng "Pathless"
+#
+#
+# Autorid: Tatiana Chukhonkina, Jelizaveta Balduhhova
+#
+# mõningane eeskuju: võtsime innustuse eelmise aasta pikslimängust, sest tahtsime ise sellise teha
+#
+# Lisakommentaar (nt käivitusjuhend):juhtimine toimub nooltega üles, alla, vasakule, paremale.
+# Kui soovite kiirendada/vaenlasega võidelda, vajutage klahvi "X".
+#  Mängu eesmärk: ületada kõik tasemed (3) ja lüüa vaenlased.
+##################################################
+
 import pygame
 import sys
 import os
@@ -27,7 +44,7 @@ class Game:
 
         self.display_2 = pygame.Surface((320, 240))
 
-        #ограниченное колво кадров
+        #piiratud kaadrite hulk
         self.clock = pygame.time.Clock()
 
         
@@ -35,7 +52,7 @@ class Game:
 
             #всё норм
         self.assets = {
-            'player': load_image('entities/player/idle/idle1.png'), #for now!!!!!!!
+            'player': load_image('entities/player/idle/idle1.png'),
             'decor': load_images('tiles/decor'),
             'grass': load_images('tiles/grass'),
             'large_decor': load_images('tiles/large_decor'),
@@ -61,7 +78,7 @@ class Game:
             'shoot': pygame.mixer.Sound('sfx/shoot.wav'),
             'ambience': pygame.mixer.Sound('sfx/ambience.wav'),
         }
-        #фиксит громкость звука
+        #parandab helitugevust
         self.sfx['ambience'].set_volume(0.2)
         self.sfx['shoot'].set_volume(0.4)
         self.sfx['hit'].set_volume(0.8)
@@ -78,13 +95,14 @@ class Game:
 
         self.level = 0
         self.load_level(self.level)
-        #self.tilemap.load('map.json')
+        
 
         self.screenshake = 0
         
 
+    # Laadige määratud tase, lähtestades tilemapist, määrates mängija ja vaenlase positsioonid ning valmistades ette visuaalsed ja mänguelemendid.
     def load_level(self, map_id):
-        self.tilemap.load('andmed/maps/' + str(map_id) + '.json') #load everything from map 'maps'
+        self.tilemap.load('andmed/maps/' + str(map_id) + '.json') #laadib kõik kaardilt "kaardid"
 
         self.leaf_spawners = []
         for tree in self.tilemap.extract([('large_decor', 2)], keep=True):
@@ -117,22 +135,22 @@ class Game:
 
         background = pygame.transform.scale(background, (self.screen.get_width(), self.screen.get_height()))
 
-        logo_width = 300  # Adjust this width as needed
-        logo_height = 150  # Adjust this height as needed
+        logo_width = 300  # reguleerib logo laiust vastavalt vajadusele
+        logo_height = 150  #reguleerib seda kõrgust vastavalt vajadusele
         logo = pygame.transform.scale(logo, (logo_width, logo_height))
 
         logo_x = (self.screen.get_width() - logo_width) // 1.25
         logo_y = 50 
         
 
-        #suurus
+        # start nupu suurus
         button_width = 100 
         button_height = 63
         start_button = pygame.transform.scale(start_button, (button_width, button_height))
         start_button.set_colorkey((255, 255, 255))
        
 
-        #asukoht
+        # nupu asukoht
         button_x = (self.screen.get_width() - button_width) // 2.5
         button_y = self.screen.get_height() // 1.9
         button_rect = start_button.get_rect(topleft=(button_x, button_y))
@@ -140,7 +158,7 @@ class Game:
         
 
 
-        
+        #eritsükkel start ekraani jaoks
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: 
@@ -163,12 +181,12 @@ class Game:
    
 
     def run(self):
-
+#1 muusika start ekraani jaoks, 2 mängu jaoks
         pygame.mixer.music.load('sfx/lullaby.wav')
         pygame.mixer.music.set_volume(0.4)
         pygame.mixer.music.play(-1)
         self.start_screen()
-        #MUSIC
+        
         pygame.mixer.music.load('sfx/hiding.wav')
         pygame.mixer.music.set_volume(0.4)
         pygame.mixer.music.play(-1)
@@ -215,14 +233,14 @@ class Game:
                 enemy.render(self.display, offset=render_scroll)
                 if kill:
                     self.enemies.remove(enemy)
-                #pole muutusi y teljel
+              
            
 
             if not self.dead:
                 self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
                 self.player.render(self.display, offset = render_scroll)
 
-            # [[x, y], direction, timer]
+            # värskendab proj. asukohti, käsitleb kokkupõrkeid tile'i või mängijaga, loob kokkupõrkel visuaalseid efekte.
             for projectile in self.projectiles.copy():
                 projectile[0][0] += projectile[1]
                 projectile[2] += 1
@@ -258,28 +276,27 @@ class Game:
                 kill = particle.update()
                 particle.render(self.display, offset=render_scroll)
                 if particle.type == 'leaf':
-                    particle.pos[0] += math.sin(particle.animation.frame * 0.035) * 0.3 # smoother pattern for falling leafs
+                    particle.pos[0] += math.sin(particle.animation.frame * 0.035) * 0.3 # sujuvam muster langevate lehtede jaoks
                 if kill:
                     self.particles.remove(particle)
 
             display_mask = pygame.mask.from_surface(self.display)
             display_sillhouette = display_mask.to_surface(setcolor=(0, 0, 0, 180), unsetcolor=(0, 0, 0, 0))
             for offset in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-                self.display_2.blit(display_sillhouette, offset) # тут короче можно менять колическо теней
+                self.display_2.blit(display_sillhouette, offset) # siin saab muuta varjude arvu
 
 
             for event in pygame.event.get():   #event on igasugune sisend vms
-                #exiting
+                #väljumine
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
 
                     #klahv on vajutatud
                 if event.type == pygame.KEYDOWN:
-                    #up
+            
                     if event.key == pygame.K_LEFT:
                         self.movement[0] = True
-                        #down
                     if event.key == pygame.K_RIGHT:
                         self.movement[1] = True
                     if event.key == pygame.K_UP:
@@ -290,15 +307,15 @@ class Game:
  
                    #klahv pole vajutatud  
                 if event.type == pygame.KEYUP:
-                    #stop up and down
                     if event.key == pygame.K_LEFT:
                         self.movement[0] = False
                     if event.key == pygame.K_RIGHT:
                         self.movement[1] = False
 
+            ## haldab tasemete üleminekuid mängu oleku alusel
             if self.transition:
                 transition_surf = pygame.Surface(self.display.get_size())
-                #рисует черный круг с центра
+                #tõmbab keskelt musta ringi
                 pygame.draw.circle(transition_surf, (255, 255, 255), (self.display.get_width() // 2, self.display.get_height() // 2), (30 - abs(self.transition)) * 8)
                 transition_surf.set_colorkey((255, 255, 255))
                 self.display.blit(transition_surf, (0, 0))

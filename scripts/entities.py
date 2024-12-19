@@ -73,7 +73,7 @@ class PhysicsEntity:
     def render(self, surf, offset=(0, 0)):
   
         sprite_x = self.pos[0] - offset[0] + self.anim_offset[0]
-         #мб тут ошибка
+       
         sprite_y = self.pos[1] - offset[1] + self.sprite_offset_y + self.anim_offset[1]
 
         surf.blit(pygame.transform.flip(self.animation.img(), self.flip, False), (sprite_x, sprite_y))
@@ -157,7 +157,7 @@ class Player(PhysicsEntity):
         super().update(tilemap, movement = movement)
 
         self.air_time += 1
-#  что бы не выпадать из мира
+#et mitte maailmast välja kukkuda
         if self.air_time > 180:
             if not self.game.dead:
                 self.game.screenshake = max(16, self.game.screenshake)

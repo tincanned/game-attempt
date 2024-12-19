@@ -24,12 +24,6 @@ class Tilemap():
                 self.tilemap = {}
                 self.offgrid_tiles = []
                 
-                                #täidab tilemapi
-                '''for i in range(10):
-                        self.tilemap[str(3 + i) + ';10'] = {'type' : 'grass', 'variant' : '1', 'pos': (3 + i, 10)}
-                
-                        self.tilemap['10;' + str(5 + i)] = {'type': 'grass', 'variant': '1', 'pos': (10, 5 + i)}'''
-                
         def extract(self, id_pairs, keep=False):
                 matches = []
                 for tile in self.offgrid_tiles.copy():
