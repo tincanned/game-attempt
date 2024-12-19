@@ -120,7 +120,7 @@ class Game:
         self.projectiles = []
         self.particles = []
         self.sparks = []
-        #self.player.pos = [50, 50] #спамниться на спавне а не бегает как сумашедшая при смерти внизу
+        
 
         
         self.scroll = [0, 0]
